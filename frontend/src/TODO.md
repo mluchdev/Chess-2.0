@@ -14,7 +14,7 @@
 4. Game history saved - moves saved. [DONE]
 5. Ability to play without logging. 
 6. Using only one boardSize (not 2 one in gameContext one in logContext). [DONE]
-7. Bugs: [TERAZ]
+7. Bugs:
     a> dangling request in the homePage fetching for pairing constantly. [FIXED]
     b> No HTTP connection sometimes. [FIXED]
         I> The problem is with posting connections. [FIXED]
@@ -24,13 +24,16 @@
     h> White can move black piece using click move. [FIXED].
     i> Loading sign disappears at homePage after rerender. 
     j> InfoTab displays players in inversed order. [FIXED]
+    h> premove time running for the wrong player bug. [NOW]
 8. White moves only when it's his turn to do so [DONE].
 9. Add premoves:
     a> Lichess alike premoves. [DONE]
     b> Rewrite PieceContainer.js to make it simplier. [DONE]
-    c> Premove with moving piece. [TERAZ]
-    d> unconditional premoves. [IF_POSSIBLE_MOVE]
-    e> Stack all premoves including conditional premoves.
+    c> Premove with moving piece. [DONE]
+    d> Several premoves with one piece [NOW]. (Generalnioe problem jest taki ze nie wiadomo gdzie nasza figura stoi),
+    e> Fix annoying problem with the piece disappearing after premove
+    f> unconditional premoves.
+    g> Stack all premoves including conditional premoves.
 10. Add moves after clicking on a piece. [DONE]
 11. Change logging layout - it's quite ugly.
 12. After start dragging piece is centered. [DONE]
@@ -38,13 +41,13 @@
 14. Animations after opponent move.
 15. Square gets red after right click. [DONE]
 16. Drawing arrows over the chessboard. onMouseDown + onMouseUp - in mother component Game.js
-17. HOC from making moves.
-18. 
-
+17. HOC from making moves. [DONE]
+18. This.context is undefined sometimes in the Piece component RACING CONDITIONS likely. [UGLY_SOLVE]
+19. Add option for 2 annonymous player to play.
 
 
 X. What to add in infoTab
-    Username/Nickname
+    Username/Nickname;
     Country/Location
     Rating/Elo Score
     Customization/Avatar

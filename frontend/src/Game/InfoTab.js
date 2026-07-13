@@ -6,7 +6,6 @@ import { useGameContext } from '../Contexts/gameContext';
 export let timeControl = null;
 
 const InfoTab = ({height, timeFormat}) => {
-    // imports
     const {logState: {userInfo, opponent, isUserWhite}} = useLogContext();
     const {gameEvents, setGameEvents, moveHistory} = useGameContext();
     const theme = useThemeContext();
@@ -86,10 +85,10 @@ const InfoTab = ({height, timeFormat}) => {
         flexDirection: 'column',
         border: `1px ${theme.isBright ? 'solid black' : 'dotted white'}`,
         borderRadius: '10px',
-        left: '30px',         // Match container padding
-        right: '30px',        // Match container padding
-        padding: '10px',      // Add padding inside the tab
-        boxSizing: 'border-box' // Ensure padding is included in width/height
+        left: '30px',
+        right: '30px',
+        padding: '10px',
+        boxSizing: 'border-box'
     };
     
     const captionContainer = {
@@ -97,11 +96,11 @@ const InfoTab = ({height, timeFormat}) => {
         flexDirection: 'row',
         justifyContent: 'space-between',
         color: `${theme.isBright ? 'black' : 'white'}`,
-        width: '100%',        // Ensure it takes full width of the tab
-        alignItems: 'center', // Center items vertically
-        overflow: 'hidden',   // Hide overflow if necessary
-        whiteSpace: 'nowrap', // Prevent text from wrapping
-        textOverflow: 'ellipsis' // Show ellipsis if text overflows
+        width: '100%',
+        alignItems: 'center',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis'
     };
     
     const playerStyle = {
@@ -113,12 +112,12 @@ const InfoTab = ({height, timeFormat}) => {
     };
     
     const headingStyle = {
-        margin: 0,            // Remove default margins
-        padding: 0,           // Remove default padding
-        flexShrink: 1,        // Allow text to shrink if necessary
-        overflow: 'hidden',   // Hide overflow if necessary
-        whiteSpace: 'nowrap', // Prevent text from wrapping
-        textOverflow: 'ellipsis', // Show ellipsis if text overflows
+        margin: 0,
+        padding: 0,
+        flexShrink: 1,
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
     };
 
     const clock = {

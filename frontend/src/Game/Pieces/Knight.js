@@ -8,9 +8,9 @@ import whiteKnight from '../../Assets/whitePieces/knight.png';
 export class Knight extends Piece {
     type = 'Knight';
 
-    constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer});
-        this.graphic = isWhite ? whiteKnight : blackKnight;
+    constructor(props){
+        super(props);
+        this.graphic = props.isWhite ? whiteKnight : blackKnight;
         this.possibleMoves = () => this.attack(true);
     }
 
@@ -22,9 +22,6 @@ export class Knight extends Piece {
 
     canMove(moveX, moveY, premove = false) {
         return Math.abs(moveX * moveY) === 2 && (premove || this.validateMove(moveX, moveY, false));
-            // Only knight moves multiplied give 
-            // nie jest poza planszą
-            // sprawdzenie czy król nie będzie szachowany
     }
 
     getPosition(){

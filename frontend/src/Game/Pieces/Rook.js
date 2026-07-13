@@ -9,14 +9,14 @@ import whiteRook from '../../Assets/whitePieces/rook.png'
 export class Rook extends Piece {
     type = 'Rook';
 
-    constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer});
-        this.graphic = isWhite ? whiteRook : blackRook;
+    constructor(props){
+        super(props);
+        this.graphic = props.isWhite ? whiteRook : blackRook;
         this.possibleMoves = () => this.attack(true);
     }
 
     attack(checkCheck = false) {
-        const {playerPieces : {current}} = this.context;
+        const {playerPieces : {current}} = this.gameContext;
         const pieces = [...current.allyPieces, ...current.enemyPieces];
         
         let iterContinue = {left: true, right: true, up: true, down: true};

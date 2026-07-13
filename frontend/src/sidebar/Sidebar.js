@@ -10,7 +10,6 @@ import styled, {keyframes} from 'styled-components'
 import "./Sidebar.css"
 import React from 'react'
 
-////////////////////////////// Css styles for components.
 const boxStyle = {
   width: '100% !important',
   marginBottom: "10px",
@@ -73,7 +72,6 @@ const logoStyle = {
   height: "128.2px"
 }
 
-////////////////////////////// Component itself
 export const Sidebar = () => {
   const theme = useThemeContext();
   const log = useLogContext();

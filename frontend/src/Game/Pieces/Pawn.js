@@ -22,10 +22,10 @@ import blackKnight from '../../Assets/blackPieces/knight.png';
 export class Pawn extends Piece {
     type = 'Pawn';
 
-    constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer}); // dlaczego jest podwójny call?
-        this.graphic = isWhite ? whitePawn : blackPawn;
-        this.direction = isPlayer ? -1 : 1;
+    constructor(props){
+        super(props); // dlaczego jest podwójny call?
+        this.graphic = props.isWhite ? whitePawn : blackPawn;
+        this.direction = props.isPlayer ? -1 : 1;
         this.state = {
             promotes: 'Pawn',
             shift: 0,
@@ -53,14 +53,14 @@ export class Pawn extends Piece {
     }
 
     async canMove(moveX, moveY, justChecking = false, chosenPiece = undefined, premove = false) {
-        const {playerPieces, moveHistory} = this.context;
+        const {playerPieces, moveHistory} = this.gameContext;
         const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'];
-        const isValid = (
-            ((moveY === this.direction && !moveX && (premove || enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY))) || 
-            (moveY === 2*this.direction && !moveX && this.y%(boardSize - 3) === 1 && (premove || enemyPieces.every(p => p.current.x !== this.x + moveX || p.current.y !== this.y + moveY))) ||
-            (Math.abs(moveX) * moveY === this.direction && (premove || enemyPieces.some(p => p.current.x === this.x + moveX && p.current.y === this.y + moveY)))) &&
-            (premove || this.validateMove(moveX, moveY))
-        );
+
+        const forward1 = moveY === this.direction && !moveX && (premove || enemyPieces.every(p => p.current.x !== this.x || p.current.y !== this.y + moveY));
+        const forward2 = moveY === 2 * this.direction && !moveX && this.y % (boardSize - 3) === 1 && (premove || enemyPieces.every(p => p.current.x !== this.x || p.current.y !== this.y + moveY));
+        const diagonal = Math.abs(moveX) * moveY === this.direction && (premove || enemyPieces.some(p => p.current.x === this.x + moveX && p.current.y === this.y + moveY));
+        const validateResult = premove || this.validateMove(moveX, moveY);
+        const isValid = (forward1 || forward2 || diagonal) && validateResult;
         if(isValid && (this.y + moveY === boardSize - 1 || this.y + moveY === 0) && !justChecking ){ // promotion
             if(!chosenPiece) {
                 this.setState({promotes: 'promotes', shift: moveX});

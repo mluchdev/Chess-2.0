@@ -81,7 +81,7 @@ export const LoggingContainer = () => {
                         Sign up
                     </button>
                 </div>
-                { created === true ?
+                { created === true ? // Co jakby tu dac mu check your email?
                     <div
                         style={{height: `${logHeight.current}px`}}
                         className="form-class sign-up-success animate-class"

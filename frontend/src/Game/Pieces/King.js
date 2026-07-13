@@ -9,9 +9,9 @@ import whiteKing from '../../Assets/whitePieces/king.png';
 export class King extends Piece {
     type = 'King';
 
-    constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer});
-        this.graphic = isWhite ? whiteKing : blackKing;
+    constructor(props){
+        super(props);
+        this.graphic = props.isWhite ? whiteKing : blackKing;
         this.possibleMoves = () => this.attack(true);
     }
 
@@ -27,7 +27,7 @@ export class King extends Piece {
     }
 
     canMove(moveX, moveY, premove = false) {
-        const {playerPieces, gameEvents: {check}, moveHistory} = this.context;
+        const {playerPieces, gameEvents: {check}, moveHistory} = this.gameContext;
         const enemyPieces = playerPieces.current[this.isPlayer ? 'enemyPieces' : 'allyPieces'];
 
         if( // można to zrobić w jednym ifie.

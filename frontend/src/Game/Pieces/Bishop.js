@@ -9,14 +9,14 @@ import whiteBishop from '../../Assets/whitePieces/bishop.png'
 export class Bishop extends Piece {
     type = 'Bishop';
 
-    constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer});
-        this.graphic = isWhite ? whiteBishop : blackBishop;
+    constructor(props){
+        super(props);
+        this.graphic = props.isWhite ? whiteBishop : blackBishop;
         this.possibleMoves = () => this.attack(true);
     }
 
     attack(checkCheck = false) {
-        const {playerPieces: {current}} = this.context;
+        const {playerPieces: {current}} = this.gameContext;
         const pieces = [...current.allyPieces, ...current.enemyPieces];
 
         let moves = [];

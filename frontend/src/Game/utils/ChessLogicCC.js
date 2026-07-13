@@ -3,22 +3,14 @@ import { useMoveMarkersContext } from '../../Contexts/moveMarkersContext';
 import { useLogContext } from '../../Contexts/LogContext';
 import isEqual from 'fast-deep-equal';
 
-// Tu chyba
 export const moveFunctions = {
-    functions: {},
-    replaceFunction: function(keyBefore, keyAfter) {
-        if(this.functions[keyBefore]) {
-        this.functions[keyAfter] = this.functions[keyBefore];;
-        delete this.functions[keyBefore];
-        }
-    }
+    functions: {}, // pieceId -> moveFunction
 };
 
-export const ChessLogicCC = (pieceClass, ownRef, premove, connection) => { // tego ownRefa weź zrename'uj
+export const ChessLogicCC = (pieceClass, ownRef, connection) => { // tego ownRefa weź zrename'uj
     const { setUpdateFunction, markerPositions, setMarkerPositions } = useMoveMarkersContext();
-    const {gameEvents, setGameEvents, moveHistory, playerPieces} = useGameContext();
+    const {gameEvents, setGameEvents, moveHistory, playerPieces, applyPremove, addPremove} = useGameContext();
     const { logState: {isUserWhite} } = useLogContext();
-    const {addPremove, applyPremove} = premove;
 
     const isKingChecked = (allySide, enemySide) => {
         const enemyKing = playerPieces.current[enemySide].find(p => p.current.type === 'King');
@@ -37,7 +29,7 @@ export const ChessLogicCC = (pieceClass, ownRef, premove, connection) => { // te
     const moveFunction = async (moveX, moveY, promotes = '') => {
         let condition = promotes ? await pieceClass?.current.canMove(moveX, moveY, false, promotes) : await pieceClass?.current.canMove(moveX, moveY);
 
-        if ( !condition ) // move illegal
+        if ( !condition )
             return false;
 
         const oldSquare = document.querySelector(`#square-${pieceClass.current.x}-${pieceClass.current.y}`);
@@ -78,14 +70,9 @@ export const ChessLogicCC = (pieceClass, ownRef, premove, connection) => { // te
         else if(isEndOfTheGame) // stalemate
             setGameEvents(prev => ({...prev, stalemate: true}));
         
-        moveFunctions.replaceFunction(
-            `${pieceClass.current.x - moveX}-${pieceClass.current.y - moveY}`, 
-            `${pieceClass.current.x}-${pieceClass.current.y}`,
-        );
-
         setMarkerPositions([]);
 
-        return true; // move possible, piece will be moved
+        return true; // move possible
     }
 
     const makeMove = async (moveX, moveY) => { 
@@ -96,7 +83,7 @@ export const ChessLogicCC = (pieceClass, ownRef, premove, connection) => { // te
                 connection.send({type: 'move', body: moveHistory.current.at(-1)});
             }
 
-            await applyPremove(false);
+            await applyPremove(false); 
         } else if(gameEvents.isWhiteToMove !== isUserWhite ) {
             const condition = pieceClass.current.type === 'Pawn' ? 
             await pieceClass.current.canMove(moveX, moveY, false, undefined, true) : 
@@ -112,8 +99,9 @@ export const ChessLogicCC = (pieceClass, ownRef, premove, connection) => { // te
                     x: moveX,
                     y: moveY,
                     },
-                    ...(pieceClass.current.type === 'Pawn' && 
-                    pieceClass.current.state.promotes && 
+                    pieceId: pieceClass.current.pieceId,
+                    ...(pieceClass.current.type === 'Pawn' &&
+                    pieceClass.current.state.promotes &&
                     {promotes: pieceClass.current.state.promotes})
                 };
 

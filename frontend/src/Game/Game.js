@@ -14,11 +14,11 @@ import { useLogContext } from '../Contexts/LogContext'
 import { MoveMarkersContextProvider } from '../Contexts/moveMarkersContext';
 import InfoTab from './InfoTab';
 import { WebSocketClient } from '../HandyComponents/wsFront';
-import { usePremove } from './utils/globalFunctions';
+import { useGameContext } from '../Contexts/gameContext';
 
 class Chessboard extends React.PureComponent {
-  constructor({logState, premove}) { // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę
-    super();
+  constructor(props) { // tu musi pójść uogólnienie - zmiana wszystkiego tak naprawdę - ale jak na uogolnienie
+    super(props);
     this.state = {
       windowDim: {
         height: window.innerHeight,
@@ -27,11 +27,11 @@ class Chessboard extends React.PureComponent {
       widthAndHeightValue: 0,
     };
 
-    this.premove = premove
+    this.premove = props.premove;
 
-    this.ws = new WebSocketClient(`ws://localhost:5500/Game?username=${logState.userInfo.user}&opponent=${logState.opponent.user}`, premove);
+    this.logState = props.logState;
     
-    this.logState = logState;
+    this.ws = new WebSocketClient(`ws://localhost:5500/Game?username=${this.logState.userInfo.user}&opponent=${this.logState.opponent.user}`, this.premove);
     
     this.state.widthAndHeightValue = this.state.windowDim.width > this.state.windowDim.height ? 0.75*this.state.windowDim.height : 0.75*this.state.windowDim.width;
     
@@ -132,7 +132,6 @@ class Chessboard extends React.PureComponent {
                                   i={i}
                                   j={j}
                                   tileSize={widthAndHeightValue/boardSize}
-                                  premove={this.premove}
                                   connection={this.ws}
                                 />
                               }
@@ -165,12 +164,11 @@ class Chessboard extends React.PureComponent {
 
 export const Game = ({...props}) => {
   const {logState} = useLogContext();
-  const {addPremove, applyPremove, getPremoveHistory} = usePremove();
-
+  const premove = useGameContext();
   // potem się doda różne wersje gry które bd iść razem z propsami.
   return (
     <>
-      <Chessboard logState={logState} premove={{addPremove, applyPremove, getPremoveHistory}}/>
+      <Chessboard logState={logState} premove={premove}/>
     </>
   );
 }

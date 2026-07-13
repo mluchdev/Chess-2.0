@@ -3,12 +3,12 @@ import { boardSize } from "../Contexts/LogContext";
 import { timeControl } from "../Game/InfoTab";
 
 export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedną partię na raz potem się zmieni
-    constructor(url, usePremove) {
+    constructor(url, premove) {
         this.url = url;
         this.ws = null;
         this.isTransitioning = false;
         this.lastTimestamp = null;
-        this.premove = usePremove;
+        this.premove = premove;
     }
 
     async convert2JSON(message) {
@@ -36,12 +36,14 @@ export class WebSocketClient { // najpierw dajmy tak żeby user grał tylko jedn
                     timeControl(newTimestamp - oldTimestamp);
                 } else if(messageJSON.type === 'move') {
                     const [content] = Object.values(messageJSON.body);
-                    const key = `${content.finalSquares.x - content.move.x}-${boardSize - content.finalSquares.y + content.move.y - 1}`;
+                    const fromX = content.finalSquares.x - content.move.x;
+                    const fromY = boardSize - content.finalSquares.y + content.move.y - 1;
 
                     timeControl(messageJSON.oldTimestamp - Date.now());
 
-                    await moveFunctions.functions[key](content.move.x, -content.move.y, messageJSON?.promotes ?? '');
-                    await this.premove.applyPremove(true); // move auf player who made a premove
+                    const enemyPiece = this.premove.playerPieces.current.enemyPieces.find(p => p.current.x === fromX && p.current.y === fromY);
+                    await moveFunctions.functions[enemyPiece.current.pieceId](content.move.x, -content.move.y, messageJSON?.promotes ?? '');
+                    await this.premove.applyPremove(true);
                 } else if(messageJSON.type === 'premove') {
                     this.premove.addPremove( messageJSON.body, false );
                 }

@@ -6,12 +6,12 @@ import { moveFunctions } from './utils/ChessLogicCC';
 import Moveable from 'react-moveable';
 import './piece.css';
 
-const PieceContainer = ({i, j, tileSize, premove, connection}) => {
+const PieceContainer = ({i, j, tileSize, connection}) => {
   const [isReady, setIsReady] = useState(false);
   const pieceClass = useRef(null);
   const imageRef = useRef(null);
   const ownRef = useRef(null);
-  const {setMarkers, makeMove, moveFunction} = ChessLogicCC(pieceClass, ownRef, premove, connection);
+  const {setMarkers, makeMove, moveFunction} = ChessLogicCC(pieceClass, ownRef, connection);
 
   useEffect(() => {
     if(imageRef.current)
@@ -19,7 +19,7 @@ const PieceContainer = ({i, j, tileSize, premove, connection}) => {
   }, []);
 
   useEffect(() => {
-    moveFunctions.functions[`${i}-${j}`] = moveFunction; // setting function on same label as piece position.
+    moveFunctions.functions[`piece-${i}-${j}`] = moveFunction;
   }, [i, j]);
 
   return (
@@ -68,6 +68,7 @@ const PieceContainer = ({i, j, tileSize, premove, connection}) => {
       <PieceOn
         i={i}
         j={j}
+        pieceId={`piece-${i}-${j}`}
         ref={imageRef}
         pointer={pieceClass}
       />

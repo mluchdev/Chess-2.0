@@ -1,19 +1,22 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { Box } from '@chakra-ui/react';
 import { useMoveMarkersContext } from '../Contexts/moveMarkersContext';
+import { useLogContext } from '../Contexts/LogContext';
 import { useGameContext } from '../Contexts/gameContext';
 import { useThemeContext } from '../Contexts/themeContext';
 import isEqual from 'fast-deep-equal';
 import { Dot } from './Dot';
 
+
 export const setTiles = {}
 
 export const Tile = ({i, j, children, ...props}) => {
   const [tileColor, setTileColor] = useState('default');
-  const { markerPositions } = useMoveMarkersContext();
+  const { markerPositions, setMarkerPositions } = useMoveMarkersContext();
   const thisElementRef = useRef(null);
   const theme = useThemeContext();
-  const {gameEvents: {isWhiteToMove}, moveHistory} = useGameContext();
+  const {isUserWhite} = useLogContext();
+  const {gameEvents: {isWhiteToMove}, moveHistory, resetAllPremoves, premoveHistory} = useGameContext();
 
   const colors = {
     white: {
@@ -37,11 +40,31 @@ export const Tile = ({i, j, children, ...props}) => {
     backgroundColor: colors[(i + j) % 2 === 0 ? 'white' : 'black'][tileColor],
   };
 
+  const leftClick = (e) => {
+    if(children) // stoi na polu figura
+      return
+    if(isUserWhite === isWhiteToMove) // user jest na posunieciu
+      return
+    // * Dla wielu graczy ciezko to bedzie ogarnac
+
+    resetAllPremoves(true);
+    setMarkerPositions([]);
+  }
+
   const rightClick = (e, customArg = '') => {
     if( !customArg ) {
       e?.preventDefault();
       e?.stopPropagation(); // Need so that only one square gets highlighted
-      setTileColor(color => color === 'red' ? 'default' : 'red');
+      setTileColor(color => {
+        if(color === 'red'){
+          if(premoveHistory.current?.some(object => object.finalSquares['x'] === i && object.finalSquares['y']))
+            return 'premove';
+          else
+            return 'default';
+        }
+        else if(color !== 'red')
+          return 'red';
+      }); // nie bierze pod uwage premove'a
     } else {
       setTileColor(customArg);
     }
@@ -65,6 +88,7 @@ export const Tile = ({i, j, children, ...props}) => {
       ref={thisElementRef}
       height='100%'
       width='100%'
+      onClick={leftClick}
       position='relative'
       backgroundColor={tileColor}
       border='1px solid rgb(0, 0, 0)'

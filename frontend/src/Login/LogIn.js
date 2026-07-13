@@ -24,7 +24,7 @@ export const Login = ({theme, setLogState, user, password}) => {
             response = await fetch(`http://localhost:5500/get-user?email=${encodeURIComponent(user.value)}&password=${encodeURIComponent(password.value)}`, {
                 method: 'GET',
             });
-        } else { // username query
+        } else { // in production it's gonna be changed
             response = await fetch(`http://localhost:5500/get-user?user=${encodeURIComponent(user.value)}&password=${encodeURIComponent(password.value)}`, {
                 method: 'GET',
             })
@@ -59,7 +59,7 @@ export const Login = ({theme, setLogState, user, password}) => {
                 className='data-not-correct-communicate'
                 style={{visibility: wrongPass ? 'visible' : 'hidden'}}
             >
-                <h2> Gambit rejected! Play master stroke with correct login. </h2>
+                <h2> Gambit rejected! Try different login. </h2>
             </div>
             <div 
                 className={`gradient ${!userAnimation ? 'gradient-animation-infinite' : 'gradient-animation-finite'}`}

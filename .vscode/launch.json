@@ -2,17 +2,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
+            "type": "firefox",
             "request": "launch",
-            "name": "Launch Brave against localhost",
+            // "name": "Launch Brave against localhost", 
+            "name": "Launch Firefox against localhost",
             "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}/frontend",
-            "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
-            "sourceMaps": true,
-            "sourceMapPathOverrides": {
-                "webpack:///src/*": "${webRoot}/src/*",
-                "webpack:///./src/*": "${webRoot}/src/*"
-            }
+            "firefoxExecutable": "/usr/bin/firefox",            
+            // "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+            "pathMappings": [{
+                "url": "webpack:///src/",
+                "path": "${webRoot}/src/"
+            }],
+            // "sourceMaps": true,
+            // "sourceMapPathOverrides": {
+            //     "webpack:///src/*": "${webRoot}/src/*",
+            //     "webpack:///./src/*": "${webRoot}/src/*"
+            // }
         },
         {
             "type": "node",
@@ -40,7 +46,8 @@
     "compounds": [
         {
             "name": "Full Stack: Frontend + Backend",
-            "configurations": ["Launch Brave against localhost", "Debug Backend"]
+            // "configurations": ["Launch Brave against localhost", "Debug Backend"]
+            "configurations": ["Launch Firefox against localhost", "Debug Backend"]
         }
     ]
 }

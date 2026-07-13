@@ -12,12 +12,12 @@ import whiteQueen from '../../Assets/whitePieces/queen.png'
 export class Queen extends Piece {
     type = 'Queen';
 
-    constructor({isWhite, i, j, isPlayer}){
-        super({i, j, isPlayer});
+    constructor(props){
+        super(props);
         this.diagonalAttack = Bishop.prototype.attack.bind(this); // binding bishop attack function
         this.straightAttack = Rook.prototype.attack.bind(this); // binding rook attack function
         this.possibleMoves = () => ([...this.diagonalAttack(true), ...this.straightAttack(true)]);
-        this.graphic = isWhite ? whiteQueen : blackQueen;
+        this.graphic = props.isWhite ? whiteQueen : blackQueen;
     }
 
     attack() {

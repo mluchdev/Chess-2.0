@@ -35,7 +35,7 @@ export const eventBus = {
 };
 
 // da sie to zrobić jakoś ładnie i szybko?
-export const PieceOn = forwardRef(({i, j, pointer}, ref) => {
+export const PieceOn = forwardRef(({i, j, pieceId, pointer}, ref) => {
   const gameContext = useGameContext();
   const {logState} = useLogContext();
   const [piece, setPiece] = useState({
@@ -64,10 +64,12 @@ export const PieceOn = forwardRef(({i, j, pointer}, ref) => {
   }, [j, pointer]);
 
   const PieceComponent = PieceComponents[piece.type];
-  return <PieceComponent 
+  return <PieceComponent
     {...piece}
-    isPlayer={pointer?.current?.isPlayer ?? j > boardSize/2} 
+    pieceId={pieceId}
+    isPlayer={pointer?.current?.isPlayer ?? j > boardSize/2}
     pointer={ref}
     ref={pointer}
+    gameContext={gameContext} // Sometimes child doesn't have the context idk why
   />
 });
