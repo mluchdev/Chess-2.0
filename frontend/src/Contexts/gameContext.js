@@ -1,6 +1,5 @@
 import React from 'react';
 import { moveFunctions } from '../Game/utils/ChessLogicCC';
-import { boardSize } from './LogContext';
 import { setTiles } from '../Game/Tile';
 
 export const GameContext = React.createContext();
@@ -49,58 +48,40 @@ export const GameContextProvider = ({children}) => {
 
     const applyPremove = async (isPlayer) => {
         if(premoveHistory.current.length === 0)
-            return
+            return;
 
-        console.log(`[PREMOVE] applyPremove called. isPlayer=${isPlayer}, queue length=${premoveHistory.current.length}`, premoveHistory.current.map(p => `(${p.finalSquares.x},${p.finalSquares.y})`));
-
-        if(isPlayer) { // cofamy figure ktora sie bedzie ruszac
-            console.log('[PREMOVE] unpremoveAllPieces — moving pieces back to real positions');
+        if(isPlayer) {
             unpremoveAllPieces();
         }
 
-        const lastPremove = premoveHistory.current.shift(); // ! on nie znajdzie figury ruszonej kilka razy
-        const oldY = isPlayer ? lastPremove.finalSquares.y - lastPremove.move.y : boardSize - 1 - lastPremove.finalSquares.y + lastPremove.move.y;
-        const oldX = lastPremove.finalSquares.x - lastPremove.move.x
-
-        console.log(`[PREMOVE] Trying to apply: (${oldX},${oldY}) -> (${lastPremove.finalSquares.x},${lastPremove.finalSquares.y}), move=(${lastPremove.move.x},${lastPremove.move.y})`);
-
-        const chosenFunction = moveFunctions.functions[lastPremove.pieceId];
-        if(!chosenFunction) {
-            console.error(`[PREMOVE] No moveFunction for pieceId=${lastPremove.pieceId}`);
-        }
-
-        if(!premoveHistory.current.some(moveObject => moveObject.finalSquares.x === lastPremove.finalSquares.x && moveObject.finalSquares.y === lastPremove.finalSquares.y))
-            toggleSquareColor(isPlayer, lastPremove, 'default');
-
-        // Jak premove usunal graficznie figure to ja przywracamy
+        const lastPremove = premoveHistory.current.shift();
+        
         if(moveHistory.current.length + 1 === piecesTaken.current[0]?.moveNum) {
-            console.log(`[PREMOVE] Reviving piece captured during premove at square=${piecesTaken.current[0].squareId}`);
             const firstRemovedPiece = piecesTaken.current.shift();
             graphicallyRevive(firstRemovedPiece);
         }
 
-        // chosenFunction output is wrong here.
-        if(chosenFunction && await chosenFunction(lastPremove.move.x, (isPlayer ? 1 : -1) * lastPremove.move.y, lastPremove?.promotes) ) { // da sie wykonać premove
-            console.log(`[PREMOVE] Premove executed successfully. Remaining queue: ${premoveHistory.current.length}`);
-            delete lastPremove.type; // ? Po co jest ten delete
-        } else if(isPlayer){ // premove impossible for the player
-            const moveValidity = await chosenFunction(lastPremove.move.x, (isPlayer ? 1 : -1) * lastPremove.move.y, lastPremove?.promotes)
-            console.warn(`[PREMOVE] Premove was illegal — resetting all premoves. chosenFunction=${!!chosenFunction}. moveValidity=${moveValidity}`);
+        if(!premoveHistory.current.some(moveObject => moveObject.finalSquares?.x === lastPremove.finalSquares?.x && moveObject.finalSquares?.y === lastPremove.finalSquares?.y))
+            toggleSquareColor(isPlayer, lastPremove, 'default');
+
+        const chosenFunction = moveFunctions.functions[lastPremove.pieceId];
+
+        if(chosenFunction && await chosenFunction(lastPremove.move.x, (isPlayer ? 1 : -1) * lastPremove.move.y, lastPremove?.promotes)) {
+            console.log('Move legal: ', lastPremove);
+            delete lastPremove.type;
+        } else if(isPlayer) {
+            console.error(`[PREMOVE REJECTED] Player premove illegal: pieceId=${lastPremove.pieceId} at (${lastPremove.finalSquares?.x},${lastPremove.finalSquares?.y}) move=(${lastPremove.move.x},${lastPremove.move.y}) - chosenFunction=${!!chosenFunction} moveResult=${chosenFunction ? 'false (move check failed)' : 'undefined (no moveFunction)'}`);
             resetAllPremoves();
-        } else { // premove impossible for the opponent
-            console.warn('[PREMOVE] Opponent premove was illegal — clearing queue');
+        } else {
+            console.error(`[PREMOVE REJECTED] Opponent premove illegal: pieceId=${lastPremove.pieceId} at (${lastPremove.finalSquares?.x},${lastPremove.finalSquares?.y}) move=(${lastPremove.move.x},${lastPremove.move.y}) - chosenFunction=${!!chosenFunction}`);
             premoveHistory.current = [];
         }
 
-        if(isPlayer) {
-            console.log(`[PREMOVE] premoveAllPieces — re-applying ${premoveHistory.current.length} remaining premove(s)`);
-            premoveAllPieces();
-        }
     }
 
     // moveFunction is being cut somewhere there.
     const addPremove = (moveObject, isPlayer) => {
-        premoveHistory.current.push(moveObject);
+        premoveHistory.current.push({...moveObject, isPlayer});
 
         if(isPlayer) {
             const {x: newX, y: newY} = moveObject.finalSquares;
@@ -110,7 +91,6 @@ export const GameContextProvider = ({children}) => {
             if(newSquare.childElementCount){
                 const pieceToBeRemoved = newSquare.firstChild;
                 const moveNumber = moveHistory.current.length + premoveHistory.current.length * 2; // pojdzie do zmiany dla conditional premoves
-                console.log(`[PREMOVE] addPremove: piece found at target (${newX},${newY}), removing. Will revive at moveNum=${moveNumber}`);
                 piecesTaken.current.push({
                     moveNum: moveNumber,
                     object: pieceToBeRemoved,
@@ -119,7 +99,6 @@ export const GameContextProvider = ({children}) => {
                 pieceToBeRemoved.remove();
             }
 
-            console.log(`[PREMOVE] addPremove: (${oldX},${oldY}) -> (${newX},${newY})`);
             moveFromTo(oldX, oldY, newX, newY, playerPieces, moveObject.pieceId);
         }
 
@@ -127,39 +106,37 @@ export const GameContextProvider = ({children}) => {
     }
 
     const resetAllPremoves = (fromTile = false) => {
-        console.log(`[PREMOVE] resetAllPremoves. fromTile=${fromTile}, queue length=${premoveHistory.current.length}`);
         if(fromTile) {
             premoveHistory.current.forEach(premove => {
                 setTiles[`${premove.finalSquares.x}-${premove.finalSquares.y}`]('', 'default');
             });
         }
         unpremoveAllPieces();
+        console.log('[RESET PREMOVES] Reviving all taken pieces:', piecesTaken.current.length);
         piecesTaken.current.forEach(graphicallyRevive);
 
         piecesTaken.current = [];
         premoveHistory.current = [];
     }
 
-    const unpremoveAllPieces = () => { // this is wrong bugged.
-        console.log(`[PREMOVE] unpremoveAllPieces — undoing ${premoveHistory.current.length} premove(s) in reverse`);
-        premoveHistory.current.reduceRight((_, premove) => {
+    const unpremoveAllPieces = () => {
+        premoveHistory.current?.forEach((premove) => {
+            if(!premove?.finalSquares || !premove?.move) return;
             const currentX = premove.finalSquares.x;
             const currentY = premove.finalSquares.y;
             const oldX = currentX - premove.move.x;
             const oldY = currentY - premove.move.y;
-            console.log(`[PREMOVE]   unpremove: (${currentX},${currentY}) -> (${oldX},${oldY})`);
             moveFromTo(currentX, currentY, oldX, oldY, playerPieces, premove.pieceId);
-        }, null);
+        });
     }
 
     const premoveAllPieces = () => {
-        console.log(`[PREMOVE] premoveAllPieces — applying ${premoveHistory.current.length} premove(s)`);
-        premoveHistory.current.forEach(premove => {
+        premoveHistory.current?.forEach(premove => {
+            if(!premove?.finalSquares || !premove?.move) return;
             const newX = premove.finalSquares.x;
             const newY = premove.finalSquares.y;
             const oldX = newX - premove.move.x;
             const oldY = newY - premove.move.y;
-            console.log(`[PREMOVE]   premove: (${oldX},${oldY}) -> (${newX},${newY})`);
             moveFromTo(oldX, oldY, newX, newY, playerPieces, premove.pieceId);
         });
     }
@@ -174,6 +151,8 @@ export const GameContextProvider = ({children}) => {
         addPremove,
         applyPremove,
         resetAllPremoves,
+        unpremoveAllPieces,
+        premoveAllPieces,
         premoveHistory
     }
 
@@ -185,8 +164,18 @@ export const GameContextProvider = ({children}) => {
 export const useGameContext = () => React.useContext(GameContext);
 
 const graphicallyRevive = (premoveObject) => {
-  console.log(`[PREMOVE] graphicallyRevive: restoring piece to ${premoveObject.squareId}`);
-  document.getElementById(premoveObject.squareId).appendChild( premoveObject.object ); // graficzne przywrócenie figury
+  console.log('[REVIVE] Attempting to revive at squareId:', premoveObject.squareId, 'object:', premoveObject.object);
+  const square = document.getElementById(premoveObject.squareId);
+  if(!square) {
+    console.error('[REVIVE ERROR] Square not found:', premoveObject.squareId);
+    return;
+  }
+  if(!premoveObject.object) {
+    console.error('[REVIVE ERROR] Object is null/undefined');
+    return;
+  }
+  square.appendChild(premoveObject.object);
+  console.log('[REVIVE] Successfully revived piece');
 }
 
 export const moveFromTo = (fromX, fromY, toX, toY, playerPieces, pieceId) => {
@@ -195,7 +184,6 @@ export const moveFromTo = (fromX, fromY, toX, toY, playerPieces, pieceId) => {
 
     const pieceToBeMoved = oldSquare.firstChild;
     if(!pieceToBeMoved) {
-        console.error(`[PREMOVE] moveFromTo(${fromX},${fromY} -> ${toX},${toY}): source square is EMPTY — no piece to move!`);
         return;
     }
     oldSquare.replaceChildren();
@@ -203,7 +191,6 @@ export const moveFromTo = (fromX, fromY, toX, toY, playerPieces, pieceId) => {
 
     const pieceClassRef = playerPieces.current.allyPieces.find(piece => piece.current.pieceId === pieceId);
     if(!pieceClassRef) {
-        console.error(`[PREMOVE] moveFromTo: no piece with pieceId=${pieceId}`);
         return;
     }
     pieceClassRef.current.x = toX;

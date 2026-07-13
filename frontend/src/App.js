@@ -6,6 +6,7 @@ import { HomePage } from './Home-page/HomePage'
 import { CustomGame } from './Room/CustomGame'
 import { Game } from './Game/Game'
 import { GameContextProvider } from './Contexts/gameContext';
+import { PairingContextProvider } from './Contexts/pairingContext';
 import { LoggingContainer } from './Login/LoggingContainer'
 
 function App() {
@@ -33,25 +34,27 @@ function App() {
       id='hierarchy-top'
     >
       <Router>
-        <Layout>
-          <Routes>
-            {/* jeszcze landing page tutaj pójdzie */}
-            <Route path="/" style={flexStyle} Component={HomePage}/>
-            <Route path="/Play-A" element={
-              <CustomGame variant='A'/>
-            }/>
-            <Route path="/Play-B" element={
-              <CustomGame variant='B'/>
-            }/>
-            <Route path="/Game" element={
-              <GameContextProvider>
-                <Game/>
-              </GameContextProvider>
-            }/>
-            <Route path="/logging" element={<Logger/>}/>
-            {/* to do modyfikacji leci */}
-          </Routes>
-        </Layout>
+        <PairingContextProvider>
+          <Layout>
+            <Routes>
+              {/* jeszcze landing page tutaj pójdzie */}
+              <Route path="/" style={flexStyle} Component={HomePage}/>
+              <Route path="/Play-A" element={
+                <CustomGame variant='A'/>
+              }/>
+              <Route path="/Play-B" element={
+                <CustomGame variant='B'/>
+              }/>
+              <Route path="/Game" element={
+                <GameContextProvider>
+                  <Game/>
+                </GameContextProvider>
+              }/>
+              <Route path="/logging" element={<Logger/>}/>
+              {/* to do modyfikacji leci */}
+            </Routes>
+          </Layout>
+        </PairingContextProvider>
       </Router>
     </div>
   );

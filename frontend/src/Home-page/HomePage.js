@@ -4,6 +4,7 @@ import React from 'react'
 import {CenteredCell} from './../HandyComponents/HandyComponents'
 import {CustomGame} from './../Room/CustomGame'
 import {useLogContext} from '../Contexts/LogContext'
+import {usePairingContext} from '../Contexts/pairingContext'
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css'
 
@@ -18,23 +19,14 @@ export const HomePage = () => {
   const logState = useLogContext();
   const theme = useThemeContext();
   const navigate = useNavigate();
+  const pairing = usePairingContext();
 
   const ButtonWrapper = ({ children, id, color, timeFormat, hoverColor}) => {
-    const [isLoading, setIsLoading] = React.useState(true);
-    const intervalID = React.useRef(null);
-    
-    const clearCurrentInterval = () => {
-        if (intervalID.current) {
-          console.log("Clearing current interval...");
-          clearInterval(intervalID.current);
-          intervalID.current = null;
-        }
-    };
+    const [isLoading, setIsLoading] = React.useState(!pairing.isSearching(id));
 
-    React.useEffect(() => {
-      clearCurrentInterval();
-      return clearCurrentInterval; // tylko to wsm
-    }, []);
+    const clearCurrentInterval = () => {
+        pairing.stopSearch(id);
+    };
 
     const opponentFound = () => {
       clearCurrentInterval();
@@ -42,7 +34,7 @@ export const HomePage = () => {
       deleteRecord();
       navigate(`/Game?timeformat=${id}`);
     }
-    
+
     const deleteRecord = () => {
       fetch(`http://localhost:5500/pairing?format=${id}`, { // CHECKED - being run every time after pairing
         method: 'DELETE',
@@ -55,8 +47,8 @@ export const HomePage = () => {
 
     const handleButtonClick = async (_) => {
       setIsLoading(val => !val);
-      
-      if(!intervalID.current) {
+
+      if(!pairing.isSearching(id)) {
         const dataFrom = await fetch(`http://localhost:5500/pairing?format=${id}`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -69,7 +61,7 @@ export const HomePage = () => {
         .catch(error => console.log(`Following error while POSTING pairing ${error}`));
 
         if(!dataFrom?.opponent) { // waiting to find the opponent
-          intervalID.current = setInterval(async () => {
+          const newIntervalID = setInterval(async () => {
             try {
               const opponentInfo = await fetch(
                 `http://localhost:5500/pairing?format=${id}&user=${logState.logState.userInfo.user}`, {
@@ -87,6 +79,7 @@ export const HomePage = () => {
               clearCurrentInterval();
             }
           }, 1000);
+          pairing.startSearch(id, newIntervalID, deleteRecord);
         } else { // opponent fetched in 1st attempt
           logState.setLogState({opponent: dataFrom.opponent, isUserWhite: false, boardSize: 8});
           opponentFound();

@@ -75,40 +75,52 @@ export const ChessLogicCC = (pieceClass, ownRef, connection) => { // tego ownRef
         return true; // move possible
     }
 
-    const makeMove = async (moveX, moveY) => { 
-        if(gameEvents.isWhiteToMove === pieceClass.current.props.isWhite && gameEvents.isWhiteToMove === isUserWhite  && await moveFunction(moveX, moveY)) { // player move
-            if(pieceClass.current.state.promotes !== 'Pawn' && pieceClass.current.state.promotes !== 'promotes') {
-                connection.send({type: 'move', body: moveHistory.current.at(-1), promotes: pieceClass.current.state.promotes})
-            } else {
-                connection.send({type: 'move', body: moveHistory.current.at(-1)});
-            }
+    const makeMove = async (moveX, moveY) => {
+        if(gameEvents.isWhiteToMove === pieceClass.current.props.isWhite && gameEvents.isWhiteToMove === isUserWhite) {
+            if(await moveFunction(moveX, moveY)) { // player move
+                if(pieceClass.current.state.promotes !== 'Pawn' && pieceClass.current.state.promotes !== 'promotes') {
+                    connection.send({type: 'move', body: moveHistory.current.at(-1), promotes: pieceClass.current.state.promotes})
+                } else {
+                    connection.send({type: 'move', body: moveHistory.current.at(-1)});
+                }
 
-            await applyPremove(false); 
+                await applyPremove(false);
+            }
         } else if(gameEvents.isWhiteToMove !== isUserWhite ) {
-            const condition = pieceClass.current.type === 'Pawn' ? 
-            await pieceClass.current.canMove(moveX, moveY, false, undefined, true) : 
-            await pieceClass.current.canMove(moveX, moveY, true);      
+            // For pawns: canMove will show promotion UI if at queening row. justChecking=false triggers UI.
+            const condition = pieceClass.current.type === 'Pawn' ?
+            await pieceClass.current.canMove(moveX, moveY, false, undefined, true) :
+            await pieceClass.current.canMove(moveX, moveY, true);
 
             if(condition) {
                 let moveObject = {
-                    finalSquares: {
-                    x: pieceClass.current.x + moveX,
-                    y: pieceClass.current.y + moveY,
-                    },
-                    move: {
-                    x: moveX,
-                    y: moveY,
-                    },
-                    pieceId: pieceClass.current.pieceId,
-                    ...(pieceClass.current.type === 'Pawn' &&
-                    pieceClass.current.state.promotes &&
-                    {promotes: pieceClass.current.state.promotes})
+                    [pieceClass.current.type]: {
+                        finalSquares: {
+                            x: pieceClass.current.x + moveX,
+                            y: pieceClass.current.y + moveY,
+                        },
+                        move: {
+                            x: moveX,
+                            y: moveY,
+                        }
+                    }
                 };
 
+                // Same promotion handling as normal moves
+                if(pieceClass.current.state.promotes !== 'Pawn' && pieceClass.current.state.promotes !== 'promotes') {
+                    moveObject[pieceClass.current.type].promotes = pieceClass.current.state.promotes;
+                }
+
+                // Send pieceId with premove
+                moveObject[pieceClass.current.type].pieceId = pieceClass.current.pieceId;
                 connection.send({type: 'premove', body: moveObject});
 
-                // graficzny ruch
-                addPremove(moveObject, true);
+                // graficzny ruch — need to add pieceId for internal tracking
+                const moveWithId = {
+                    ...moveObject[pieceClass.current.type],
+                    pieceId: pieceClass.current.pieceId
+                };
+                addPremove(moveWithId, true);
             }
         }
     }

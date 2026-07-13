@@ -54,17 +54,17 @@ export const Tile = ({i, j, children, ...props}) => {
   const rightClick = (e, customArg = '') => {
     if( !customArg ) {
       e?.preventDefault();
-      e?.stopPropagation(); // Need so that only one square gets highlighted
+      e?.stopPropagation();
       setTileColor(color => {
         if(color === 'red'){
-          if(premoveHistory.current?.some(object => object.finalSquares['x'] === i && object.finalSquares['y']))
+          if(premoveHistory.current?.some(object => object?.finalSquares?.x === i && object?.finalSquares?.y === j))
             return 'premove';
           else
             return 'default';
         }
         else if(color !== 'red')
           return 'red';
-      }); // nie bierze pod uwage premove'a
+      });
     } else {
       setTileColor(customArg);
     }

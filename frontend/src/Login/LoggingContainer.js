@@ -10,11 +10,6 @@ import {HomePage} from '../Home-page/HomePage.js'
 const notFoundUserPrefix  = 'What'
 const notFoundEmailPrefix = 'Your'
 
-const formStyle = {
-    margin: '0px',
-    width: '50%',
-}
-
 export const LoggingContainer = () => {
     const [user, setUser] = useState('');
     const [email, setEmail] = useState('');
@@ -24,16 +19,11 @@ export const LoggingContainer = () => {
 
     const navigate = useNavigate();
 
-    const logHeight = useRef(0);
     const formRef = useRef(null);
     const signUpRef = useRef(null);
 
     const LogContext = useLogContext();
     const theme = useThemeContext();
-
-    useEffect(() => {
-        logHeight.current = formRef.current?.clientHeight;
-    }, [LogContext.logState.option]);
 
     useEffect(() => {
         if(created) {
@@ -47,7 +37,7 @@ export const LoggingContainer = () => {
             }, 2000)
         } else if(LogContext.logState.logInfo === 'User found') {
             setTimeout(() => {
-                navigate('/') // animacja logowania bylaby chyba git, ale tym to sie fe rajaja
+                navigate('/') 
             }, 1000);
         }
     }, [LogContext.logState.logInfo, created]);
@@ -81,33 +71,26 @@ export const LoggingContainer = () => {
                         Sign up
                     </button>
                 </div>
-                { created === true ? // Co jakby tu dac mu check your email?
-                    <div
-                        style={{height: `${logHeight.current}px`}}
-                        className="form-class sign-up-success animate-class"
-                    > User created successfully </div>
-                    :
-                    <div style={formStyle} ref={formRef}>
-                        {LogContext.logState.option === 'Sign Up' ?
-                            <SignUp
-                                theme={theme}
-                                setLogState={LogContext.setLogState}
-                                setCreated={setCreated}
-                                user={{value: user, set: setUser}}
-                                email={{value: email, set: setEmail}}
-                                password={{value: password, set: setPassword}}
-                                confirmation={{value: confirmPassword, set: setConfirmPassword}}
-                            />
-                            :
-                            <Login
-                                theme={theme}
-                                setLogState={LogContext.setLogState}
-                                user={{value: user, set: setUser}}
-                                password={{value: password, set: setPassword}}
-                            />
-                        }
-                    </div>
-                }
+                <div className="form-wrapper" ref={formRef}>
+                    {LogContext.logState.option === 'Sign Up' ?
+                        <SignUp
+                            theme={theme}
+                            setLogState={LogContext.setLogState}
+                            setCreated={setCreated}
+                            user={{value: user, set: setUser}}
+                            email={{value: email, set: setEmail}}
+                            password={{value: password, set: setPassword}}
+                            confirmation={{value: confirmPassword, set: setConfirmPassword}}
+                        />
+                        :
+                        <Login
+                            theme={theme}
+                            setLogState={LogContext.setLogState}
+                            user={{value: user, set: setUser}}
+                            password={{value: password, set: setPassword}}
+                        />
+                    }
+                </div>
             </div>
         </>
     );
